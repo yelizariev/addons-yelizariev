@@ -24,7 +24,15 @@ class IrConfigParameter(models.Model):
         prop = self.env['ir.property'].search(domain)
         prop.company_id = None
         prop.name = PROP_NAME % res.key
+        res._update_db_value(vals.get('value'))
         return res
+
+    @api.multi
+    def _update_db_value(self, value):
+        """Store value in db column. We can use it only directly,
+        because ORM treat value as computed multi-company field"""
+        self.ensure_one()
+        self.env.cr.execute("UPDATE ir_config_parameter SET value=%s WHERE id = %s", (value, self.id, ))
 
     @api.model
     def reset_database_secret(self):
@@ -77,6 +85,7 @@ class IrConfigParameter(models.Model):
             # already exists
             return existing
 
+        _logger.debug('Create default value for %s', self.key)
         return self.env['ir.property'].create({
             'fields_id': self.env.ref('base.field_ir_config_parameter_value').id,
             'res_id': '%s,%s' % (self._name, self.id),
@@ -99,7 +108,6 @@ class IrConfigParameter(models.Model):
         # rename "value_tmp" back to "value_tmp"
         cr.execute("ALTER TABLE ir_config_parameter RENAME COLUMN value_tmp TO value")
 
-        _logger.info('Create default values for records in ir.config_parameter by creating records in ir.property.')
         for r in self.env['ir.config_parameter'].sudo().search([]):
             cr.execute("SELECT key,value FROM ir_config_parameter WHERE id = %s", (r.id, ))
             res = cr.dictfetchone()

@@ -112,5 +112,7 @@ class IrConfigParameter(models.Model):
             cr.execute("SELECT key,value FROM ir_config_parameter WHERE id = %s", (r.id, ))
             res = cr.dictfetchone()
             value = res.get('value')
-            # create default value if it doesn't exist
-            r._create_default_value(value)
+            # value may be empty after migration from previous module version
+            if value:
+                # create default value if it doesn't exist
+                r._create_default_value(value)

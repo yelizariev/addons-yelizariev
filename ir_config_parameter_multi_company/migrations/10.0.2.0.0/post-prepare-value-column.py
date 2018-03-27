@@ -3,12 +3,10 @@ from odoo import api, SUPERUSER_ID
 
 
 def migrate(cr, version):
-    # in prevous version, column doesn't exist
-
-    # create column
-    cr.execute("ALTER TABLE ir_config_parameter ADD COLUMN value VARCHAR")
-
     # fill column
+    #
+    # we can do it only "post-", because in "pre-" there is no
+    # _update_config_parameter_value method yet
     env = api.Environment(cr, SUPERUSER_ID, {})
 
     field_id = env.ref('base.field_ir_config_parameter_value').id

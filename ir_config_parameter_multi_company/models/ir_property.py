@@ -7,8 +7,14 @@ class IrProperty(models.Model):
 
     @api.multi
     def write(self, vals):
-        """Check for default value updates for ir.config_parameter"""
         res = super(IrProperty, self).write(vals)
+        self._update_config_parameter_value()
+        return res
+
+    @api.multi
+    def _update_config_parameter_value(self):
+        """Check for default value in ir.config_parameter
+        and copy value to "value" column"""
         field = self.env.ref('base.field_ir_config_parameter_value')
         for r in self:
             if r.fields_id != field:
@@ -25,4 +31,3 @@ class IrProperty(models.Model):
             value = r.get_by_record()
             param = self.env['ir.config_parameter'].browse(int(res_id))
             param._update_db_value(value)
-        return res

@@ -1,6 +1,6 @@
 import logging
 
-from odoo import models, fields, api, _, tools
+from odoo import models, fields, api, tools
 from odoo.addons.base.ir.ir_config_parameter import IrConfigParameter as IrConfigParameterOriginal, _default_parameters
 
 _logger = logging.getLogger(__name__)

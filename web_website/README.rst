@@ -28,6 +28,11 @@ safely installable and uninstallable. See module
   * ``write`` -- call ``_update_properties_label``
   * ``_auto_init`` -- call ``_auto_init_website_dependent``
 
+* In the field's module add ``uninstall_hook``:
+
+  * remove field's properties
+  * update module where the field is from
+
 Roadmap
 =======
 

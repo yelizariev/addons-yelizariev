@@ -36,8 +36,8 @@ class IrConfigParameter(models.Model):
                 if r.key in SHARED_KEYS:
                     r._force_default(FIELD_NAME, value)
 
-        if 'key' in vals:
-            self._update_properties_label(vals)
+        if any(k in vals for k in ('key', 'value')):
+            self._update_properties_label(FIELD_NAME)
 
         return res
 

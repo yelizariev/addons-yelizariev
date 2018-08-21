@@ -31,17 +31,6 @@ class WebsiteDependentMixin(models.AbstractModel):
             for prop in self.env['ir.property'].search(domain):
                 prop.name = self._prop_label(field_name, prop.company_id, prop.website_id)
 
-            return prop
-
-    @api.multi
-    def write(self, vals):
-        res = super(WebsiteDependentMixin, self).write(vals)
-
-        if self._rec_name and self._rec_name in vals:
-            self._update_properties_label(vals)
-
-        return res
-
     def _force_default(self, field_name, prop_value):
         """Remove company-dependent values and keeps only default one"""
         self.ensure_one()
@@ -84,7 +73,7 @@ class WebsiteDependentMixin(models.AbstractModel):
         """Store value in db column. We can use it only directly,
         because ORM treat value as computed multi-company field"""
         self.ensure_one()
-        self.env.cr.execute("UPDATE ir_config_parameter SET %s=%%s WHERE id = %s" % (field_name, self.id), (value,))
+        self.env.cr.execute("UPDATE %s SET %s=%%s WHERE id = %s" % (self._table, field_name, self.id), (value,))
 
     @api.multi
     def _create_default_value(self, field, prop_value):
@@ -100,11 +89,11 @@ class WebsiteDependentMixin(models.AbstractModel):
             # already exists
             return existing
 
-        _logger.debug('Create default value for %s', self.key)
+        label = self._prop_label(field.name)
         return self.env['ir.property'].create({
             'fields_id': field.id,
             'res_id': '%s,%s' % (self._name, self.id),
-            'name': self._prop_label(field.name),
+            'name': label,
             'value': prop_value,
             'type': 'text',
         })
@@ -121,9 +110,9 @@ class WebsiteDependentMixin(models.AbstractModel):
         # to don't lose values, because during installation the column "value" is deleted
         cr.execute("ALTER TABLE %s RENAME COLUMN %s TO %s_tmp" % (self._table, field_name, field_name))
 
-        self.pool.post_init(self._post_init, field_name)
+        self.pool.post_init(self._post_init_website_dependent, field_name)
 
-    def _post_init(self, field_name):
+    def _post_init_website_dependent(self, field_name):
         cr = self.env.cr
 
         # rename "FIELD_tmp" back to "FIELD"

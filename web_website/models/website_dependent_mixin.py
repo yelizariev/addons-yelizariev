@@ -19,9 +19,9 @@ class WebsiteDependentMixin(models.AbstractModel):
         if not company and not website:
             label += 'default'
         elif website:
-            label += 'value for %s (company "%s")' % (website.name, company.name)
+            label += 'company + website'
         else:
-            label += 'value for company "%s"' % company.name
+            label += 'company'
         return label
 
     def _update_properties_label(self, field_name):

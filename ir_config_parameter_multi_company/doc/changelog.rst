@@ -1,4 +1,4 @@
-`3.1.0`
+`4.0.0`
 -------
 
 - **Fix:** random errors with multi-website parameters due to wrong cache usage

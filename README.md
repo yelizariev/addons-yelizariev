@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.com/it-projects-llc/misc-addons.svg?branch=12.0)](https://travis-ci.com/it-projects-llc/misc-addons)
 
+Maybe it's a conflict?
+
 Odoo addons
 ===========
 

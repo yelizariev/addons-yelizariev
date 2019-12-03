@@ -1,0 +1,28 @@
+name: "ITPP Runbot: Rebuild Images"
+
+on:
+  push:
+    paths:
+      - "itpp-runbot/**"
+      - ".github/workflows/itpp-runbot.yml"
+
+jobs:
+  rebuild-images:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: Build and publish Docker Image
+      uses: elgohr/Publish-Docker-Github-Action@master
+      env:
+        ODOO_VERSION: ${{ github.ref }}
+        AGGREGATE: true
+        PIP_INSTALL_ODOO: false
+        CLEAN: false
+        COMPILE: false
+      with:
+        name: ${{ github.repository	}}/itpp-runbot
+        registry: docker.pkg.github.com
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        buildargs: ODOO_VERSION,AGGREGATE,PIP_INSTALL_ODOO,CLEAN,COMPILE
+        workdir: itpp-runbot/odoo/

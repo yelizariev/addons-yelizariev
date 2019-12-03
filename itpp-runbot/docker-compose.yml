@@ -1,0 +1,150 @@
+version: "2.4"
+
+services:
+    odoo_proxy:
+        image: tecnativa/whitelist
+        depends_on:
+            - odoo
+        networks: &public
+            default:
+            public:
+        ports:
+            - "127.0.0.1:6899:6899"
+            - "127.0.0.1:8069:8069"
+        environment:
+            PORT: "6899 8069"
+            TARGET: odoo
+
+    odoo:
+        image: base-image # TODO
+        hostname: "$SMTP_REAL_NON_CANONICAL_DEFAULT"
+        tty: true
+        labels:
+            traefik.docker.network: "inverseproxy_shared"
+            traefik.enable: "true"
+            traefik.frontend.passHostHeader: "true"
+            traefik.longpolling.port: "8072"
+            traefik.port: "8069"
+        environment:
+            DOODBA_ENVIRONMENT: "${DOODBA_ENVIRONMENT-devel}"
+            LIST_DB: "true"
+            PTVSD_ENABLE: "${DOODBA_PTVSD_ENABLE:-0}"
+            PGDATABASE: &dbname itpp-runbot
+            PYTHONOPTIMIZE: ""
+            PYTHONPATH: /opt/odoo/custom/src/odoo
+            _PORT: "1025"
+            # To avoid installing demo data export DOODBA_WITHOUT_DEMO=all
+            WITHOUT_DEMO: "${DOODBA_WITHOUT_DEMO-false}"
+            EMAIL_FROM: "$SMTP_DEFAULT_FROM"
+            PGUSER: &dbuser "odoo"
+            DB_FILTER: ".*"
+            PROXY_MODE: "$ODOO_PROXY_MODE"
+        volumes:
+            - filestore:/var/lib/odoo:z
+        depends_on:
+            - cdnjs_cloudflare_proxy
+            - db
+            - fonts_googleapis_proxy
+            - fonts_gstatic_proxy
+            - google_proxy
+            - gravatar_proxy
+            - smtp
+            - wdb
+        command:
+            - odoo
+            - --limit-memory-soft=0
+            - --limit-time-real-cron=9999999
+            - --limit-time-real=9999999
+            - --workers=0
+            #- --dev=reload,qweb,werkzeug,xml
+
+    db:
+        image: tecnativa/postgres-autoconf:10-alpine
+        shm_size: 512mb
+        environment:
+            POSTGRES_DB: *dbname
+            POSTGRES_USER: *dbuser
+            POSTGRES_PASSWORD: odoopassword
+            CONF_EXTRA: |
+                work_mem = 32MB
+        volumes:
+            - db:/var/lib/postgresql/data:z
+
+    smtp:
+        image: mailhog/mailhog
+        networks: *public
+        ports:
+            - "127.0.0.1:8025:8025"
+
+    wdb:
+        image: kozea/wdb
+        networks: *public
+        ports:
+            - "127.0.0.1:1984:1984"
+        # HACK https://github.com/Kozea/wdb/issues/136
+        stop_signal: KILL
+
+    # Whitelist outgoing traffic for tests, reports, etc.
+    cdnjs_cloudflare_proxy:
+        image: tecnativa/whitelist
+        networks:
+            default:
+                aliases:
+                    - cdnjs.cloudflare.com
+            public:
+        environment:
+            TARGET: cdnjs.cloudflare.com
+            PRE_RESOLVE: 1
+
+    fonts_googleapis_proxy:
+        image: tecnativa/whitelist
+        networks:
+            default:
+                aliases:
+                    - fonts.googleapis.com
+            public:
+        environment:
+            TARGET: fonts.googleapis.com
+            PRE_RESOLVE: 1
+
+    fonts_gstatic_proxy:
+        image: tecnativa/whitelist
+        networks:
+            default:
+                aliases:
+                    - fonts.gstatic.com
+            public:
+        environment:
+            TARGET: fonts.gstatic.com
+            PRE_RESOLVE: 1
+
+    google_proxy:
+        image: tecnativa/whitelist
+        networks:
+            default:
+                aliases:
+                    - www.google.com
+            public:
+        environment:
+            TARGET: www.google.com
+            PRE_RESOLVE: 1
+
+    gravatar_proxy:
+        image: tecnativa/whitelist
+        networks:
+            default:
+                aliases:
+                    - www.gravatar.com
+            public:
+        environment:
+            TARGET: www.gravatar.com
+            PRE_RESOLVE: 1
+
+networks:
+    default:
+        internal: true
+    public:
+
+volumes:
+    filestore:
+    db:

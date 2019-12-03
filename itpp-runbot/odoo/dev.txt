@@ -1,0 +1,5 @@
+# To test image locally use following commands in this dir:
+
+docker build -t base-image --build-arg ODOO_VERSION=10.0 --build-arg AGGREGATE=true  --build-arg PIP_INSTALL_ODOO=false --build-arg CLEAN=false --build-arg COMPILE=false .
+cd ..
+docker-compose up

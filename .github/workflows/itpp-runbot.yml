@@ -17,6 +17,7 @@ jobs:
         REF="${{ github.ref }}"
         BRANCH=${REF##*/}
         ODOO_VERSION=$BRANCH
+        echo "ODOO_VERSION=$ODOO_VERSION"
         # see https://help.github.com/en/actions/automating-your-workflow-with-github-actions/development-tools-for-github-actions
         echo "::set-env name=ODOO_VERSION::$ODOO_VERSION"
     - name: Build and publish Docker Image

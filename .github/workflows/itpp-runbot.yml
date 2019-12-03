@@ -12,13 +12,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Debug
+    - name: Compute ODOO_VERSION
       run: |
-        echo "${{ github.ref }}"
+        REF="${{ github.ref }}"
+        BRANCH=${REF##*/}
+        ODOO_VERSION=$BRANCH
+        # see https://help.github.com/en/actions/automating-your-workflow-with-github-actions/development-tools-for-github-actions
+        echo "::set-env name=ODOO_VERSION::$ODOO_VERSION"
     - name: Build and publish Docker Image
       uses: elgohr/Publish-Docker-Github-Action@master
       env:
-        ODOO_VERSION: ${{ github.ref }}
         AGGREGATE: true
         PIP_INSTALL_ODOO: false
         CLEAN: false

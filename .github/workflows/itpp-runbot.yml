@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
+    - name: Debug
+      run: |
+        echo "${{ github.ref }}"
     - name: Build and publish Docker Image
       uses: elgohr/Publish-Docker-Github-Action@master
       env:

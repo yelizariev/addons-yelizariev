@@ -24,6 +24,7 @@ jobs:
         echo "ODOO_VERSION=$ODOO_VERSION"
         # see https://help.github.com/en/actions/automating-your-workflow-with-github-actions/development-tools-for-github-actions
         echo "::set-env name=ODOO_VERSION::$ODOO_VERSION"
+        echo "::set-env name=GIT_BRANCH::$GIT_BRANCH"
     - name: Dump env context
       env:
         CONTEXT: ${{ toJson(env) }}
@@ -36,7 +37,7 @@ jobs:
         CLEAN: false
         COMPILE: false
       with:
-        name: ${{ github.repository	}}/itpp-runbot
+        name: ${{ github.repository	}}/itpp-runbot:${{ env.GIT_BRANCH }}
         registry: docker.pkg.github.com
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}

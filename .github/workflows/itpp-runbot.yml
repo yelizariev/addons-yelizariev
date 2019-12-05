@@ -24,7 +24,7 @@ jobs:
         echo "ODOO_VERSION=$ODOO_VERSION"
         # see https://help.github.com/en/actions/automating-your-workflow-with-github-actions/development-tools-for-github-actions
         echo "::set-env name=ODOO_VERSION::$ODOO_VERSION"
-        echo "::set-env name=GIT_BRANCH::$GIT_BRANCH"
+        echo "::set-env name=GIT_BRANCH::$BRANCH"
     - name: Dump env context
       env:
         CONTEXT: ${{ toJson(env) }}

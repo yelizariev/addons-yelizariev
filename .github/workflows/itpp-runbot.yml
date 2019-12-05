@@ -26,7 +26,7 @@ jobs:
         echo "::set-env name=ODOO_VERSION::$ODOO_VERSION"
     - name: Dump env context
       env:
-        CONTEXT: ${{ env }}
+        CONTEXT: ${{ toJson(env) }}
       run: echo "$CONTEXT"
     - name: Build and publish Docker Image
       uses: elgohr/Publish-Docker-Github-Action@master

@@ -15,10 +15,6 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Dump env context
-      env:
-        CONTEXT: ${{ toJson(env) }}
-      run: echo "$CONTEXT"
     - uses: actions/checkout@v1
     - name: Compute ODOO_VERSION
       run: |
@@ -28,6 +24,10 @@ jobs:
         echo "ODOO_VERSION=$ODOO_VERSION"
         # see https://help.github.com/en/actions/automating-your-workflow-with-github-actions/development-tools-for-github-actions
         echo "::set-env name=ODOO_VERSION::$ODOO_VERSION"
+    - name: Dump env context
+      env:
+        CONTEXT: ${{ env }}
+      run: echo "$CONTEXT"
     - name: Build and publish Docker Image
       uses: elgohr/Publish-Docker-Github-Action@master
       env:

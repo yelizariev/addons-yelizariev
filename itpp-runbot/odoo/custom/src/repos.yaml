@@ -6,3 +6,11 @@
   target: odoo $ODOO_VERSION
   merges:
     - odoo $ODOO_VERSION
+./access-addons:
+  defaults:
+    depth: 1
+  remotes:
+    it-projects-llc: https://github.com/it-projects-llc/access-addons.git
+  target: it-projects-llc $ODOO_VERSION
+  merges:
+    - it-projects-llc $ODOO_VERSION

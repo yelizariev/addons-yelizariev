@@ -14,3 +14,11 @@
   target: it-projects-llc $ODOO_VERSION
   merges:
     - it-projects-llc $ODOO_VERSION
+./mail-addons:
+  defaults:
+    depth: 1
+  remotes:
+    it-projects-llc: https://github.com/it-projects-llc/mail-addons.git
+  target: it-projects-llc $ODOO_VERSION
+  merges:
+    - it-projects-llc $ODOO_VERSION

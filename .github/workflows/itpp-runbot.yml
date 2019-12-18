@@ -45,8 +45,16 @@ jobs:
         REPOS_YAML=repo/.itpp-runbot/image/src/repos.yaml
         RUN_OCA2CONFIGS=$(test -e repo/oca_dependencies.txt && test ! -e $ADDONS_YAML && echo "yes")
 
+        echo "itpp-runbot/editable-files" && ls itpp-runbot/editable-files -a
+        echo "repo" && ls repo -a
+        echo "repo/.itpp-runbot" && ls repo/.itpp-runbot" -a
+
         # other files
         cp -rnT itpp-runbot/editable-files/ repo/
+
+        echo "itpp-runbot/editable-files" && ls itpp-runbot/editable-files -a
+        echo "repo" && ls repo -a
+        echo "repo/.itpp-runbot" && ls repo/.itpp-runbot" -a
 
         # make addons.yaml from oca_dependencies.txt
         test "$RUN_OCA2CONFIGS" = "yes" && python itpp-runbot/workflows/tools/oca_dependencies2configs.py repo/oca_dependencies.txt $ADDONS_YAML $REPOS_YAML || true

@@ -57,7 +57,7 @@ jobs:
         BRANCH="${GITHUB_REF:11}"
         echo "::set-env name=BRANCH::$BRANCH"
     - name: Commit changes
-      uses: stefanzweifel/git-auto-commit-action@v2.4.0
+      uses: stefanzweifel/git-auto-commit-action@master
       with:
         #author_name: Marc Demo (Github Actions)
         #author_email: i18n-bot@it-projects.info

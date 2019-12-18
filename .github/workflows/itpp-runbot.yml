@@ -47,7 +47,7 @@ jobs:
 
         echo "itpp-runbot/editable-files" && ls itpp-runbot/editable-files -a
         echo "repo" && ls repo -a
-        echo "repo/.itpp-runbot" && ls repo/.itpp-runbot" -a
+        echo "repo/.itpp-runbot" && ls repo/.itpp-runbot -a
 
         # other files
         cp -rnT itpp-runbot/editable-files/ repo/

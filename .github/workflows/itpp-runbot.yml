@@ -69,6 +69,10 @@ jobs:
         repository: repo
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Prepare build folder
+      run: |
+        cp -rnT itpp-runbot/embedded-files/ repo/
+
     - name: Compute ODOO_VERSION
       run: |
         REF="${{ github.ref }}"
@@ -80,6 +84,7 @@ jobs:
     - name: Build and publish Docker Image
       uses: elgohr/Publish-Docker-Github-Action@master
       env:
+        LOCAL_CUSTOM_DIR: ./image
         AGGREGATE: true
         PIP_INSTALL_ODOO: false
         CLEAN: false
@@ -89,5 +94,5 @@ jobs:
         registry: docker.pkg.github.com
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-        buildargs: ODOO_VERSION,AGGREGATE,PIP_INSTALL_ODOO,CLEAN,COMPILE
-        workdir: itpp-runbot/odoo/
+        buildargs: ODOO_VERSION,AGGREGATE,PIP_INSTALL_ODOO,CLEAN,COMPILE,LOCAL_CUSTOM_DIR
+        workdir: .itpp-runbot/

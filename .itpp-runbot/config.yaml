@@ -1,0 +1,5 @@
+# See https://github.com/it-projects-llc/itpp-runbot/releases
+itpp-runbot-version: master
+
+# POSIX cron syntax. See https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows#scheduled-events-schedule
+image-rebuilding-schedule: "* 5 * * 0" 

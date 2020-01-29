@@ -28,7 +28,7 @@ jobs:
     - name: Checkout ITPP-Runbot
       uses: actions/checkout@v2-beta
       with:
-        repository: it-projects-llc/itpp-runbot
+        repository: itpp-labs/DINAR
         path: itpp-runbot
         ref: ${{ env.ITPP_RUNBOT_VERSION }}
     - uses: actions/setup-python@v1

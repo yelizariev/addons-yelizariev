@@ -1,55 +1,49 @@
-name: "ITPP Runbot: Docker Image Building"
+name: "DINAR: Docker Image Building"
 
 on:
   push:
     paths:
       - ".DINAR/**"
-      - ".github/workflows/itpp-runbot.yml"
+      - ".github/workflows/DINAR.yml"
 
   schedule:
-    - cron: "* 5 * * 0"
+    - cron: "5 5 * * 0"
 
 jobs:
   rebuild-images:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repo
-      uses: actions/checkout@v2-beta
+      uses: actions/checkout@v2
       with:
-        path: repo
-    - name: Get Runbot Version
-      run: |
-        ITPP_RUNBOT_VERSION="$(cat repo/config.yaml | grep itpp-runbot-version | awk '{print $NF}')"
-        # use master by default
-        ITPP_RUNBOT_VERSION="${ITPP_RUNBOT_VERSION:-master}"
-        # see https://help.github.com/en/actions/automating-your-workflow-with-github-actions/development-tools-for-github-actions
-        echo "::set-env name=ITPP_RUNBOT_VERSION::$ITPP_RUNBOT_VERSION"
-
-    - name: Checkout ITPP-Runbot
-      uses: actions/checkout@v2-beta
+        path: REPO
+    - name: Checkout DINAR
+      uses: actions/checkout@v2
       with:
-        repository: itpp-labs/DINAR
-        path: itpp-runbot
-        ref: ${{ env.ITPP_RUNBOT_VERSION }}
+        path: DINAR
+        #repository: itpp-labs/DINAR
+        #ref: master  # TODO: this must be fixed version
+        repository: yelizariev/itpp-runbot
+        ref: volumes  # TODO: this must be fixed version
     - uses: actions/setup-python@v1
       with:
         python-version: '3.7.x'
     - name: Check for initial version of editable files
       run: |
-        mkdir -p repo/.itpp-runbot/image/dependencies/
+        mkdir -p REPO/.DINAR/image/dependencies/
         # pip.txt
-        cp -n repo/requirements.txt repo/.itpp-runbot/image/dependencies/pip.txt || true
+        cp -n REPO/requirements.txt REPO/.DINAR/image/dependencies/pip.txt || true
 
         # check if oca_dependencies file is not converted to addons.yaml yet
-        ADDONS_YAML=repo/.itpp-runbot/image/src/addons.yaml
-        REPOS_YAML=repo/.itpp-runbot/image/src/repos.yaml
-        RUN_OCA2CONFIGS=$(test -e repo/oca_dependencies.txt && test ! -e $ADDONS_YAML && echo "yes")
+        ADDONS_YAML=REPO/.DINAR/image/src/addons.yaml
+        REPOS_YAML=REPO/.DINAR/image/src/repos.yaml
+        RUN_OCA2CONFIGS=$(test -e REPO/oca_dependencies.txt && test ! -e $ADDONS_YAML && echo "yes")
 
         # other files
-        cp -rnT itpp-runbot/editable-files/ repo/
+        cp -rnT DINAR/editable-files/ REPO/
 
         # make addons.yaml from oca_dependencies.txt
-        test "$RUN_OCA2CONFIGS" = "yes" && python itpp-runbot/workflows/tools/oca_dependencies2configs.py repo/oca_dependencies.txt $ADDONS_YAML $REPOS_YAML || true
+        test "$RUN_OCA2CONFIGS" = "yes" && python DINAR/workflow-files/oca_dependencies2configs.py REPO/oca_dependencies.txt $ADDONS_YAML $REPOS_YAML || true
 
     - run: |
         # TODO: move this to the commit action
@@ -63,25 +57,26 @@ jobs:
         #author_email: i18n-bot@it-projects.info
         branch: ${{ env.BRANCH }}
         commit_message: |
-          :alien: Update ITPP Runbot files
+          :alien: Update Editable DINAR files
 
-          > Sent from Github Actions (see .github/workflows/itpp-runbot-install.yml)
+          > Sent from Github Actions (see .github/workflows/DINAR-install.yml)
         repository: repo
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Prepare build folder
       run: |
-        cp -rnT itpp-runbot/embedded-files/ repo/
+        cp -rnT DINAR/embedded-files/ REPO/
 
     - name: Compute ODOO_VERSION
       run: |
         REF="${{ github.ref }}"
         BRANCH=${REF##*/}
-        ODOO_VERSION="$(echo $BRANCH | python itpp-runbot/workflows/tools/branch2odoo_version.py)"
+        ODOO_VERSION="$(echo $BRANCH | python DINAR/workflow-files/branch2odoo_version.py)"
         echo "ODOO_VERSION=$ODOO_VERSION"
         echo "::set-env name=ODOO_VERSION::$ODOO_VERSION"
-        echo "::set-env name=GIT_BRANCH::$BRANCH"
-    - name: Build and publish Docker Image
+        echo "::set-env name=ODOO_IMAGE::${{ github.repository	}}/DINAR-dependencies:$BRANCH"
+        echo "::set-env name=REGISTRY::.pkg.github.com
+    - name: Handle Dependencies
       uses: elgohr/Publish-Docker-Github-Action@master
       env:
         LOCAL_CUSTOM_DIR: ./image
@@ -90,9 +85,25 @@ jobs:
         CLEAN: false
         COMPILE: false
       with:
-        name: ${{ github.repository	}}/itpp-runbot:${{ env.GIT_BRANCH }}
-        registry: docker.pkg.github.com
+        name: ${{ ODOO_IMAGE }}
+        registry: ${{ REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         buildargs: ODOO_VERSION,AGGREGATE,PIP_INSTALL_ODOO,CLEAN,COMPILE,LOCAL_CUSTOM_DIR
-        workdir: repo/.itpp-runbot/
+        workdir: REPO/.DINAR/
+    - name: Install shyaml
+      run: |
+        pip install shyaml
+    - name: Install Base Addons
+      run: |
+        # convert "base-addons" list to comma-separated list
+        MODULES=$(cat REPO/.DINAR/volumes/addons.yaml | shyaml get-values base-addons | xargs | sed "s/ /,/g")
+        export DB_VERSION=10
+
+        export DOODBA_WITHOUT_DEMO=false
+        export IMAGE_TAG=$ODOO_VERSION
+        bash DINAR/workflow-files/images-with-preinstalled-modules.sh
+
+        export DOODBA_WITHOUT_DEMO=all
+        export IMAGE_TAG=$ODOO_VERSION-nodemo
+        bash DINAR/workflow-files/images-with-preinstalled-modules.sh

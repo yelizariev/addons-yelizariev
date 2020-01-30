@@ -3,7 +3,7 @@ name: "ITPP Runbot: Docker Image Building"
 on:
   push:
     paths:
-      - ".itpp-runbot/image/**"
+      - ".DINAR/**"
       - ".github/workflows/itpp-runbot.yml"
 
   schedule:

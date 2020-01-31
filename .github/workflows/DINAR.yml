@@ -86,7 +86,7 @@ jobs:
         COMPILE: false
       with:
         name: ${{ env.ODOO_IMAGE_BASE }}
-        registry: ${{ REGISTRY }}
+        registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         buildargs: ODOO_VERSION,AGGREGATE,PIP_INSTALL_ODOO,CLEAN,COMPILE,LOCAL_CUSTOM_DIR

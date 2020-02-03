@@ -74,7 +74,7 @@ jobs:
         ODOO_VERSION="$(echo $BRANCH | python DINAR/workflow-files/branch2odoo_version.py)"
         echo "ODOO_VERSION=$ODOO_VERSION"
         echo "::set-env name=ODOO_VERSION::$ODOO_VERSION"
-        echo "::set-env name=IMAGE_ODOO_BASE::${{ github.repository	}}/DINAR-dependencies:$BRANCH"
+        echo "::set-env name=IMAGE_ODOO_BASE::${{ github.repository	}}/dinar-dependencies:$BRANCH"
         echo "::set-env name=REGISTRY::docker.pkg.github.com"
     - name: Handle Dependencies
       uses: elgohr/Publish-Docker-Github-Action@master
@@ -102,11 +102,11 @@ jobs:
         export REPOSITORY=${{ github.repository	}}
 
         export DOODBA_WITHOUT_DEMO=false
-        export IMAGE_DB=${{ github.repository	}}/DINAR-db:$ODOO_VERSION
-        export IMAGE_ODOO=${{ github.repository	}}/DINAR-odoo:$ODOO_VERSION
+        export IMAGE_DB=${{ github.repository	}}/dinar-db:$ODOO_VERSION
+        export IMAGE_ODOO=${{ github.repository	}}/dinar-odoo:$ODOO_VERSION
         bash DINAR/workflow-files/images-with-preinstalled-modules.sh
 
         export DOODBA_WITHOUT_DEMO=all
-        export IMAGE_DB=${{ github.repository	}}/DINAR-db:$ODOO_VERSION-nodemo
-        export IMAGE_ODOO=${{ github.repository	}}/DINAR-odoo:$ODOO_VERSION-nodemo
+        export IMAGE_DB=${{ github.repository	}}/dinar-db:$ODOO_VERSION-nodemo
+        export IMAGE_ODOO=${{ github.repository	}}/dinar-odoo:$ODOO_VERSION-nodemo
         bash DINAR/workflow-files/images-with-preinstalled-modules.sh

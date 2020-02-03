@@ -30,6 +30,7 @@ jobs:
         python-version: '3.7.x'
     - name: Check for initial version of editable files
       run: |
+        bash -x -c "
         mkdir -p REPO/.DINAR/image/dependencies/
         # pip.txt
         cp -n REPO/requirements.txt REPO/.DINAR/image/dependencies/pip.txt || true
@@ -44,7 +45,7 @@ jobs:
 
         # make addons.yaml from oca_dependencies.txt
         test "$RUN_OCA2CONFIGS" = "yes" && python DINAR/workflow-files/oca_dependencies2configs.py REPO/oca_dependencies.txt $ADDONS_YAML $REPOS_YAML || true
-
+        "
     - run: |
         # TODO: move this to the commit action
         echo ${GITHUB_REF}

@@ -22,7 +22,7 @@ jobs:
       with:
         path: DINAR
         #repository: itpp-labs/DINAR
-        #ref: master  # TODO: this must be fixed version
+        #ref: master
         repository: yelizariev/itpp-runbot
         ref: volumes  # TODO: this must be fixed version
     - uses: actions/setup-python@v1
@@ -91,6 +91,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
         buildargs: ODOO_VERSION,AGGREGATE,PIP_INSTALL_ODOO,CLEAN,COMPILE,LOCAL_CUSTOM_DIR
         workdir: REPO/.DINAR/
+        cache: ${{ github.event_name != 'schedule' }}
     - name: Install shyaml
       run: |
         pip install shyaml

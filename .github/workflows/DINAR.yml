@@ -38,7 +38,7 @@ jobs:
         # check if oca_dependencies file is not converted to addons.yaml yet
         ADDONS_YAML=REPO/.DINAR/image/src/addons.yaml
         REPOS_YAML=REPO/.DINAR/image/src/repos.yaml
-        RUN_OCA2CONFIGS=$(test -e REPO/oca_dependencies.txt && test ! -e $ADDONS_YAML && echo "yes")
+        RUN_OCA2CONFIGS=$(test -e REPO/oca_dependencies.txt && test ! -e $ADDONS_YAML && echo "yes" || true)
 
         # other files
         cp -rnT DINAR/editable-files/ REPO/

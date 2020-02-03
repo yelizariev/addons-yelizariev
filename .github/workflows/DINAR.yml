@@ -85,7 +85,7 @@ jobs:
         CLEAN: false
         COMPILE: false
       with:
-        name: ${{ env.ODOO_IMAGE_BASE }}
+        name: ${{ env.IMAGE_ODOO_BASE }}
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}

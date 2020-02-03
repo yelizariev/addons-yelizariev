@@ -60,7 +60,7 @@ jobs:
           :alien: Update Editable DINAR files
 
           > Sent from Github Actions (see .github/workflows/DINAR-install.yml)
-        repository: repo
+        repository: REPO
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Prepare build folder

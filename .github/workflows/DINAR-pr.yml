@@ -47,10 +47,10 @@ jobs:
               export REGISTRY=docker.pkg.github.com REPOSITORY=${{ github.repository }} VERSION=${{ github.event.pull_request.base.ref }}
               git clone --depth=1 --branch $VERSION git@github.com:${{ github.repository }} pr-files
               # choose version you like
-              REVISION=${{ github.event.pull_request.head.sha}}  # Version in PR
-              REVISION=${{ github.event.pull_request.merge_commit_sha}}  # Version after merging
-              git -C pr-files fetch $REVISION
-              git -C pr-files checkout $REVISION
+              REVISION=${{ github.event.pull_request.head.ref}} REVISION_REF=origin/${{ github.event.pull_request.head.ref}} # Version in PR
+              REVISION=${{ github.event.pull_request.merge_commit_sha}} REVISION_REF=${{ github.event.pull_request.merge_commit_sha}} # Version after merging
+              git -C pr-files fetch origin $REVISION
+              git -C pr-files checkout $REVISION_REF
               docker-compose pull
               docker-compose run odoo -i ${{ env.PR_UPDATED_MODULES_INSTALLABLE }} -d itpp-runbot --stop-after-init
               docker-compose up

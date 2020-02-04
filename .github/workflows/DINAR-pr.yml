@@ -30,7 +30,7 @@ jobs:
       run: |
         # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
         cd REPO
-        python ../DINAR/workflow-files/analyze-pr.py ${{ github.event.pull_request.base.ref }} ${{ github.event.pull_request.head.ref }}
+        python ../DINAR/workflow-files/analyze-pr.py ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
     - uses: marocchino/sticky-pull-request-comment@v1.2.1
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

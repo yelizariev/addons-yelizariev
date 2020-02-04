@@ -1,11 +1,11 @@
-name: "DINAR: Pull Request"
+name: "DINAR"
 
 on:
   pull_request:
 
 jobs:
   review:
-    name: "DINAR: PR Review"
+    name: "Quick Review"
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repo

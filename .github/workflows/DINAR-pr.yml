@@ -5,7 +5,7 @@ on:
 
 jobs:
   review:
-    name: DINAR: PR Review
+    name: "DINAR: PR Review"
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repo

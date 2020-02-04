@@ -50,7 +50,6 @@ jobs:
               REVISION=${{ github.event.pull_request.head.sha}}
               # Version after merging
               REVISION=pull/${{ github.event.number}}/merge
-ll_request.merge_commit_sha}}
               git -C pr-files fetch origin $REVISION
               git -C pr-files checkout FETCH_HEAD
               docker-compose pull

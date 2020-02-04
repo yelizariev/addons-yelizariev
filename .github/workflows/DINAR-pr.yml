@@ -4,7 +4,8 @@ on:
   pull_request:
 
 jobs:
-  rebuild-images:
+  review:
+    name: DINAR: PR Review
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repo

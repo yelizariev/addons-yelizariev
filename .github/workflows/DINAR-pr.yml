@@ -39,15 +39,16 @@ jobs:
 
           To test updates run:
 
-              WORKDIR=/tmp/DINAR/${{ github.repository }}/{{ github.event.number }}/
+              WORKDIR=/tmp/DINAR/${{ github.repository }}/${{ github.event.number }}/
               mkdir -p $WORKDIR
               cd $WORKDIR
               # TODO use fixed version instead of master
               curl https://raw.githubusercontent.com/itpp-labs/DINAR/master/local-files/docker-compose.yml > docker-compose.yml
               export REGISTRY=docker.pkg.github.com REPOSITORY=${{ github.repository }} VERSION=${{ github.event.pull_request.base.ref }}
               git clone --depth=1 --branch $VERSION git@github.com:${{ github.repository }} pr-files
-              REVISION=${{ github.event.pull_request.head.ref}}  # head.ref
-              REVISION=${{ github.event.pull_request.merge_commit_sha}}  # merge_commit_sha
+              # choose version you like
+              REVISION=${{ github.event.pull_request.head.sha}}  # Version in PR
+              REVISION=${{ github.event.pull_request.merge_commit_sha}}  # Version after merging
               git -C pr-files fetch $REVISION
               git -C pr-files checkout $REVISION
               docker-compose pull

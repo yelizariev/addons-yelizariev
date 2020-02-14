@@ -1,0 +1,36 @@
+name: "ITPP Runbot: Rebuild Images"
+
+on:
+  push:
+    paths:
+      - "itpp-runbot/**"
+      - ".github/workflows/itpp-runbot.yml"
+
+jobs:
+  rebuild-images:
+
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Compute ODOO_VERSION
+      run: |
+        REF="${{ github.ref }}"
+        BRANCH=${REF##*/}
+        ODOO_VERSION=$BRANCH
+        echo "ODOO_VERSION=$ODOO_VERSION"
+        # see https://help.github.com/en/actions/automating-your-workflow-with-github-actions/development-tools-for-github-actions
+        echo "::set-env name=ODOO_VERSION::$ODOO_VERSION"
+    - name: Build and publish Docker Image
+      uses: elgohr/Publish-Docker-Github-Action@master
+      env:
+        AGGREGATE: true
+        PIP_INSTALL_ODOO: false
+        CLEAN: false
+        COMPILE: false
+      with:
+        name: ${{ github.repository	}}/itpp-runbot
+        registry: docker.pkg.github.com
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        buildargs: ODOO_VERSION,AGGREGATE,PIP_INSTALL_ODOO,CLEAN,COMPILE
+        workdir: itpp-runbot/odoo/

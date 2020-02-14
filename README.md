@@ -1,3 +1,6 @@
+
+
+
 [![Build Status](https://travis-ci.com/it-projects-llc/misc-addons.svg?branch=10.0)](https://travis-ci.com/it-projects-llc/misc-addons)
 
 Odoo addons

@@ -1,3 +1,16 @@
+# Copyright 2020 IT-Projects Labs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 name: "DINAR"
 
 on:
@@ -6,6 +19,10 @@ on:
 jobs:
   pre-commit:
     name: "pre-commit"
+    # Let Quick Review/Tests run first
+    needs:
+      - review
+      - tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -92,3 +109,94 @@ jobs:
           EOF
           # TODO: post this message when Github guys make access to post message in PR
           #> Sent by [DINAR :construction_worker_man:](https://github.com/itpp-labs/DINAR) via `.github/workflows/DINAR-pr.yml`
+      - name: Check Python Version
+        run:
+          echo "::set-env name=PY::$(python --version --version | sha256sum | cut -d' '
+          -f1)"
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+      - name: Install pre-commit
+        run: |
+          pip install pre-commit
+      - name: PRE-COMMIT against updated files only
+        run: |
+          cd REPO
+          git fetch origin/${{ github.event.pull_request.base.ref }}
+          pre-commit run --show-diff-on-failure --color=always --origin HEAD --source origin/${{ github.event.pull_request.base.ref }}
+
+  tests:
+    name: "Quick Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+        with:
+          path: REPO
+      - name: Checkout DINAR
+        uses: actions/checkout@v2
+        with:
+          path: DINAR
+          #repository: itpp-labs/DINAR
+          #ref: master # TODO: use fixed version
+          repository: yelizariev/itpp-runbot
+          ref: tests
+      - name: Set vars
+        run: |
+          # TODO: move this code to a file to reuse it without copy-pasting: workflow-files/docker-vars.sh
+          REF="${{ github.ref }}"
+          BRANCH=${REF##*/}
+          REPOSITORY="${{ github.repository }}"
+          REPO_NAME=${REPOSITORY##*/}
+          IMAGE_CODE=$REPO_NAME:$BRANCH
+          ODOO_VERSION="$(echo $BRANCH | python DINAR/workflow-files/branch2odoo_version.py)"
+          echo "ODOO_VERSION=$ODOO_VERSION"
+          echo "::set-env name=ODOO_VERSION::$ODOO_VERSION"
+          echo "::set-env name=IMAGE_ODOO_BASE::${{ github.repository	}}/dinar-deps-$IMAGE_CODE"
+          echo "::set-env name=IMAGE_CODE::$IMAGE_CODE"
+          # Registry credentials. External registry potentially can be customized here
+          echo "::set-env name=REGISTRY::docker.pkg.github.com"
+          echo "::set-env name=REGISTRY_USERNAME::${{ github.actor }}"
+          echo "::set-env name=REGISTRY_PASSWORD::${{ secrets.DINAR_TOKEN }}"
+      - name: Analyze PR
+        run: |
+          # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
+          cd REPO
+          python ../DINAR/workflow-files/analyze-pr.py ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.number }}
+      - name: Install Dependencies
+        run: |
+          # TODO if there is changes in REPO/.DINAR/image/dependencies/* we need to install them too.
+          # Workaround for now: update dependencies in upstream first and then make\update the Pull Request 
+
+          # Install dependencies without tests
+          export MODULES="${{ env.PR_UPDATED_MODULES_DEPENDENCIES }}"
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up  --abort-on-container-exit
+
+          # TODO save artifacts for local run and for integrations Tests
+
+      - name: Test updated modules
+
+
+  tests-all:
+    name: "Integration Tests"
+    # Let Quick Review/Tests run first
+    # This job uses artifacts from "Quick Tests"
+    needs:
+      - tests
+      - review
+    runs-on: ubuntu-latest
+    sptes:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+        with:
+          path: REPO
+      - name: Checkout DINAR
+        uses: actions/checkout@v2
+        with:
+          path: DINAR
+          #repository: itpp-labs/DINAR
+          #ref: master # TODO: use fixed version
+          repository: yelizariev/itpp-runbot
+          ref: tests

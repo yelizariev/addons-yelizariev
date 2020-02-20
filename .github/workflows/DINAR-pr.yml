@@ -1,4 +1,4 @@
-# Copyright 2020 IT-Projects Labs
+# Copyright 2020 IT Projects Labs
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ jobs:
         run: |
           # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
           cd REPO
-          python ../DINAR/workflow-files/analyze-pr.py ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.number }}
+          python ../DINAR/workflow-files/analyze-pr.py updated ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.number }}
       - name: HOW TO RUN LOCALLY
         #if: "env.PR_UPDATED_MODULES_INSTALLABLE != ''"
         run: |
@@ -163,7 +163,7 @@ jobs:
         run: |
           # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
           cd REPO
-          python ../DINAR/workflow-files/analyze-pr.py ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.number }}
+          python ../DINAR/workflow-files/analyze-pr.py updated ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.number }}
       - name: Install Dependencies
         run: |
           # TODO if there is changes in REPO/.DINAR/image/dependencies/* we need to install them too.
@@ -172,12 +172,22 @@ jobs:
           # Install dependencies without tests
           export MODULES="${{ env.PR_UPDATED_MODULES_DEPENDENCIES }}"
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up  --abort-on-container-exit
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up--abort-on-container-exit
 
+          
           # TODO save artifacts for local run and for integrations Tests
 
+      - name: Save DINAR with dependencies
+        uses: actions/upload-artifact@v1
+        with:
+          name: deps
+          path: TODO
       - name: Test updated modules
-
+        run: |
+          export MODULES="${{ env.PR_UPDATED_MODULES }}"
+          export ODOO_EXTRA_ARG=--test-enable
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up--abort-on-container-exit
 
   tests-all:
     name: "Integration Tests"
@@ -200,3 +210,39 @@ jobs:
           #ref: master # TODO: use fixed version
           repository: yelizariev/itpp-runbot
           ref: tests
+      - name: Analyze PR
+        run: |
+          # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
+          cd REPO
+          python ../DINAR/workflow-files/analyze-pr.py all ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.number }}
+      - name: Download deps artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: deps
+          path: TODO
+      - name: Download base images and apply deps artifact
+        run: |
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml pull
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
+          TODO: apply artifact
+      - name: Install additional dependencies
+        run: |
+          # Install dependencies without tests
+          export MODULES="${{ env.PR_ALL_MODULES_DEPENDENCIES }}"
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up--abort-on-container-exit
+          # TODO save artifacts for local run
+
+      - name: Save DINAR with dependencies
+        uses: actions/upload-artifact@v1
+        with:
+          name: deps-all
+          path: TODO
+
+      - name: Test all modules
+        run: |
+          export MODULES="${{ env.PR_UPDATED_MODULES }}"
+          export ODOO_EXTRA_ARG=--test-enable
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up--abort-on-container-exit

@@ -164,6 +164,9 @@ jobs:
           # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
           cd REPO
           python ../DINAR/workflow-files/analyze-pr.py updated ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.number }}
+      - name: Install json parser
+        run: |
+          sudo apt-get install jq
       - name: Install Dependencies
         run: |
           # TODO if there is changes in REPO/.DINAR/image/dependencies/* we need to install them too.
@@ -173,15 +176,16 @@ jobs:
           export MODULES="${{ env.PR_UPDATED_MODULES_DEPENDENCIES }}"
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up--abort-on-container-exit
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml down
 
-          
-          # TODO save artifacts for local run and for integrations Tests
+          # Save artifacts for local run and for integrations Tests
+          bash ../DINAR/workflow-files/save-docker-layers.sh deps/
 
       - name: Save DINAR with dependencies
         uses: actions/upload-artifact@v1
         with:
           name: deps
-          path: TODO
+          path: deps/
       - name: Test updated modules
         run: |
           export MODULES="${{ env.PR_UPDATED_MODULES }}"
@@ -219,30 +223,32 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: deps
-          path: TODO
+          path: deps/
       - name: Download base images and apply deps artifact
         run: |
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml pull
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
-          TODO: apply artifact
+          bash ../DINAR/workflow-files/load-docker-layers.sh deps/
       - name: Install additional dependencies
         run: |
           # Install dependencies without tests
           export MODULES="${{ env.PR_ALL_MODULES_DEPENDENCIES }}"
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up--abort-on-container-exit
-          # TODO save artifacts for local run
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
+
+          # save artifacts for local run
+          bash ../DINAR/workflow-files/load-docker-layers.sh deps-all/
 
       - name: Save DINAR with dependencies
         uses: actions/upload-artifact@v1
         with:
           name: deps-all
-          path: TODO
+          path: deps-all/
 
       - name: Test all modules
         run: |
           export MODULES="${{ env.PR_UPDATED_MODULES }}"
           export ODOO_EXTRA_ARG=--test-enable
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up--abort-on-container-exit
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit

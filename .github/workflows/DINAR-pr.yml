@@ -180,7 +180,7 @@ jobs:
           # Install dependencies without tests
           export MODULES="${{ env.PR_UPDATED_MODULES_DEPENDENCIES }}"
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up--abort-on-container-exit
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml down
 
           # Save artifacts for local run and for integrations Tests
@@ -196,7 +196,7 @@ jobs:
           export MODULES="${{ env.PR_UPDATED_MODULES }}"
           export ODOO_EXTRA_ARG=--test-enable
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up--abort-on-container-exit
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
 
   tests-all:
     name: Integration Tests

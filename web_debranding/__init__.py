@@ -1,7 +1,7 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
 from . import models
-from . import controllers
+from . import controllers    
 
 from odoo import SUPERUSER_ID, api
 
@@ -15,4 +15,4 @@ def uninstall_hook(cr, registry):
 
 def post_load():
 
-    from . import fields
+    from . import fields 

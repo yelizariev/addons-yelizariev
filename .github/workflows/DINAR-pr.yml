@@ -146,21 +146,7 @@ jobs:
           ref: tests
       - name: Set vars
         run: |
-          # TODO: move this code to a file to reuse it without copy-pasting: workflow-files/docker-vars.sh
-          REF="${{ github.ref }}"
-          BRANCH=${REF##*/}
-          REPOSITORY="${{ github.repository }}"
-          REPO_NAME=${REPOSITORY##*/}
-          IMAGE_CODE=$REPO_NAME:$BRANCH
-          ODOO_VERSION="$(echo $BRANCH | python DINAR/workflow-files/branch2odoo_version.py)"
-          echo "ODOO_VERSION=$ODOO_VERSION"
-          echo "::set-env name=ODOO_VERSION::$ODOO_VERSION"
-          echo "::set-env name=IMAGE_ODOO_BASE::${{ github.repository	}}/dinar-deps-$IMAGE_CODE"
-          echo "::set-env name=IMAGE_CODE::$IMAGE_CODE"
-          # Registry credentials. External registry potentially can be customized here
-          echo "::set-env name=REGISTRY::docker.pkg.github.com"
-          echo "::set-env name=REGISTRY_USERNAME::${{ github.actor }}"
-          echo "::set-env name=REGISTRY_PASSWORD::${{ secrets.DINAR_TOKEN }}"
+          bash DINAR/workflow-files/docker-vars.sh ${{ secrets.DINAR_TOKEN }}
       - name: Install python tools
         run: |
           pip install plumbum PyGithub

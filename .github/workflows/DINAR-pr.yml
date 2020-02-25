@@ -176,8 +176,9 @@ jobs:
           name: deps
           path: deps/
       - name: Test updated modules
+        if: env.PR_UPDATED_MODULES_INSTALLABLE != ""
         run: |
-          export MODULES="${{ env.PR_UPDATED_MODULES }}"
+          export MODULES="${{ env.PR_UPDATED_MODULES_INSTALLABLE }}"
           export ODOO_EXTRA_ARG=--test-enable
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit

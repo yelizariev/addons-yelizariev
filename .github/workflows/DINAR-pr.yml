@@ -172,7 +172,7 @@ jobs:
       - name: Install Dependencies
         run: |
           # TODO if there is changes in REPO/.DINAR/image/dependencies/* we need to install them too.
-          # Workaround for now: update dependencies in upstream first and then make\update the Pull Request 
+          # Workaround for now: update dependencies in upstream first and then make\update the Pull Request
 
           # Install dependencies without tests
           export MODULES="${{ env.PR_UPDATED_MODULES_DEPENDENCIES }}"

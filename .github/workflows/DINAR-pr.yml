@@ -125,7 +125,7 @@ jobs:
       - name: PRE-COMMIT against updated files only
         run: |
           cd REPO
-          git fetch origin/${{ github.event.pull_request.base.ref }}
+          git fetch origin ${{ github.event.pull_request.base.ref }}
           pre-commit run --show-diff-on-failure --color=always --origin HEAD --source origin/${{ github.event.pull_request.base.ref }}
 
   tests:

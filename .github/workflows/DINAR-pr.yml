@@ -194,14 +194,14 @@ jobs:
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up--abort-on-container-exit
 
   tests-all:
-    name: "Integration Tests"
+    name: Integration Tests
     # Let Quick Review/Tests run first
     # This job uses artifacts from "Quick Tests"
     needs:
       - tests
       - review
     runs-on: ubuntu-latest
-    sptes:
+    steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
         with:

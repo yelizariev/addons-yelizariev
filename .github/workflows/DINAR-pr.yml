@@ -170,7 +170,7 @@ jobs:
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml down
 
           # Save artifacts for local run and for integrations Tests
-          bash ../DINAR/workflow-files/save-docker-layers.sh deps/
+          bash DINAR/workflow-files/save-docker-layers.sh deps/
 
       - name: Save DINAR with dependencies
         uses: actions/upload-artifact@v1
@@ -226,7 +226,7 @@ jobs:
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml pull
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
-          bash ../DINAR/workflow-files/load-docker-layers.sh deps/
+          bash DINAR/workflow-files/load-docker-layers.sh deps/
       - name: Install additional dependencies
         run: |
           # Install dependencies without tests
@@ -235,7 +235,7 @@ jobs:
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
 
           # save artifacts for local run
-          bash ../DINAR/workflow-files/load-docker-layers.sh deps-all/
+          bash DINAR/workflow-files/load-docker-layers.sh deps-all/
 
       - name: Save DINAR with dependencies
         uses: actions/upload-artifact@v1

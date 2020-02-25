@@ -46,9 +46,9 @@ jobs:
         run: |
           cp -rnT DINAR/embedded-files/ REPO/
 
-      - name: Set vars
+      - name: Configure Docker
         run: |
-          bash DINAR/workflow-files/docker-vars.sh ${{ secrets.DINAR_TOKEN }}
+          bash DINAR/workflow-files/configure-docker.sh ${{ secrets.DINAR_TOKEN }}
       - name: dinar-deps
         uses: elgohr/Publish-Docker-Github-Action@master
         env:
@@ -70,9 +70,6 @@ jobs:
           pip install shyaml
       - name: Install Base Addons
         run: |
-          # authenticate
-          echo "$REGISTRY_PASSWORD" | docker login -u "$REGISTRY_USERNAME" --password-stdin "$REGISTRY"
-
           # convert "base-addons" list to comma-separated list
           export MODULES=$(cat REPO/.DINAR/volumes/addons.yaml | shyaml get-values base-addons | xargs | sed "s/ /,/g")
 

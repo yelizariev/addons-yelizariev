@@ -144,9 +144,9 @@ jobs:
           #ref: master # TODO: use fixed version
           repository: yelizariev/itpp-runbot
           ref: tests
-      - name: Set vars
+      - name: Configure docker
         run: |
-          bash DINAR/workflow-files/docker-vars.sh ${{ secrets.DINAR_TOKEN }}
+          bash DINAR/workflow-files/configure-docker.sh ${{ secrets.DINAR_TOKEN }}
       - name: Install python tools
         run: |
           pip install plumbum PyGithub
@@ -218,6 +218,9 @@ jobs:
         with:
           name: deps
           path: deps/
+      - name: Configure Docker
+        run: |
+          bash DINAR/workflow-files/configure-docker.sh ${{ secrets.DINAR_TOKEN }}
       - name: Download base images and apply deps artifact
         run: |
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config

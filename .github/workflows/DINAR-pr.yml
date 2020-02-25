@@ -161,6 +161,9 @@ jobs:
           echo "::set-env name=REGISTRY::docker.pkg.github.com"
           echo "::set-env name=REGISTRY_USERNAME::${{ github.actor }}"
           echo "::set-env name=REGISTRY_PASSWORD::${{ secrets.DINAR_TOKEN }}"
+      - name: Install python tools
+        run: |
+          pip install plumbum PyGithub
       - name: Analyze PR
         run: |
           # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
@@ -216,6 +219,9 @@ jobs:
           #ref: master # TODO: use fixed version
           repository: yelizariev/itpp-runbot
           ref: tests
+      - name: Install python tools
+        run: |
+          pip install plumbum
       - name: Analyze PR
         run: |
           # sets environment variables that available in next steps via $ {{ env.PR_... }} notation

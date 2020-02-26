@@ -236,7 +236,8 @@ jobs:
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
 
           # save artifacts for local run
-          bash DINAR/workflow-files/load-docker-layers.sh deps-all/
+          bash DINAR/workflow-files/save-docker-layers.sh deps-all/
+          echo $MODULES > deps-all/modules.txt
 
       - name: Save DINAR with dependencies
         uses: actions/upload-artifact@v1

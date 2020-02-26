@@ -6,7 +6,8 @@
  Backend debranding
 ====================
 
-Build and enhance brand by removing references to `odoo.com <https://www.odoo.com/>`__ and customizing company logo, favicon, page title, etc.
+
+Build and enhance brand by removing references to `odoo.com <https://www.odoo.com/>`__ and customizing company logo, favicon, page title, etc. 
 
 Credits
 =======

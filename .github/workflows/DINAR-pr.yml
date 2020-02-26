@@ -52,14 +52,16 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: DINAR
-          repository: itpp-labs/DINAR
-          ref: master # TODO: use fixed version
+          #repository: itpp-labs/DINAR
+          #ref: master # TODO: use fixed version
+          repository: yelizariev/itpp-runbot
+          ref: tests
       - uses: actions/setup-python@v1
         with:
           python-version: "3.7.x"
       - name: Install python tools
         run: |
-          pip install plumbum PyGithub
+          pip install plumbum PyGithub pyyaml
       - name: Analyze PR
         run: |
           # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
@@ -116,14 +118,14 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: ~/.cache/pre-commit
-          key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+          key: pre-commit|${{ env.PY }}|${{ hashFiles('REPO/.pre-commit-config.yaml') }}
       - name: Install pre-commit
         run: |
           pip install pre-commit
       - name: PRE-COMMIT against updated files only
         run: |
           cd REPO
-          git fetch origin/${{ github.event.pull_request.base.ref }}
+          git fetch origin ${{ github.event.pull_request.base.ref }}
           pre-commit run --show-diff-on-failure --color=always --origin HEAD --source origin/${{ github.event.pull_request.base.ref }}
 
   tests:
@@ -142,23 +144,12 @@ jobs:
           #ref: master # TODO: use fixed version
           repository: yelizariev/itpp-runbot
           ref: tests
-      - name: Set vars
+      - name: Configure docker
         run: |
-          # TODO: move this code to a file to reuse it without copy-pasting: workflow-files/docker-vars.sh
-          REF="${{ github.ref }}"
-          BRANCH=${REF##*/}
-          REPOSITORY="${{ github.repository }}"
-          REPO_NAME=${REPOSITORY##*/}
-          IMAGE_CODE=$REPO_NAME:$BRANCH
-          ODOO_VERSION="$(echo $BRANCH | python DINAR/workflow-files/branch2odoo_version.py)"
-          echo "ODOO_VERSION=$ODOO_VERSION"
-          echo "::set-env name=ODOO_VERSION::$ODOO_VERSION"
-          echo "::set-env name=IMAGE_ODOO_BASE::${{ github.repository	}}/dinar-deps-$IMAGE_CODE"
-          echo "::set-env name=IMAGE_CODE::$IMAGE_CODE"
-          # Registry credentials. External registry potentially can be customized here
-          echo "::set-env name=REGISTRY::docker.pkg.github.com"
-          echo "::set-env name=REGISTRY_USERNAME::${{ github.actor }}"
-          echo "::set-env name=REGISTRY_PASSWORD::${{ secrets.DINAR_TOKEN }}"
+          bash DINAR/workflow-files/configure-docker.sh ${{ secrets.DINAR_TOKEN }}
+      - name: Install python tools
+        run: |
+          pip install plumbum PyGithub pyyaml
       - name: Analyze PR
         run: |
           # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
@@ -170,16 +161,15 @@ jobs:
       - name: Install Dependencies
         run: |
           # TODO if there is changes in REPO/.DINAR/image/dependencies/* we need to install them too.
-          # Workaround for now: update dependencies in upstream first and then make\update the Pull Request 
+          # Workaround for now: update dependencies in upstream first and then make\update the Pull Request
 
           # Install dependencies without tests
           export MODULES="${{ env.PR_UPDATED_MODULES_DEPENDENCIES }}"
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up--abort-on-container-exit
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml down
-
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
           # Save artifacts for local run and for integrations Tests
-          bash ../DINAR/workflow-files/save-docker-layers.sh deps/
+          bash DINAR/workflow-files/save-docker-layers.sh deps/
+          echo $MODULES > deps/modules.txt
 
       - name: Save DINAR with dependencies
         uses: actions/upload-artifact@v1
@@ -187,21 +177,22 @@ jobs:
           name: deps
           path: deps/
       - name: Test updated modules
+        if: env.PR_UPDATED_MODULES_INSTALLABLE != ''
         run: |
-          export MODULES="${{ env.PR_UPDATED_MODULES }}"
+          export MODULES="${{ env.PR_UPDATED_MODULES_INSTALLABLE }}"
           export ODOO_EXTRA_ARG=--test-enable
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up--abort-on-container-exit
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
 
   tests-all:
-    name: "Integration Tests"
+    name: Integration Tests
     # Let Quick Review/Tests run first
     # This job uses artifacts from "Quick Tests"
     needs:
       - tests
       - review
     runs-on: ubuntu-latest
-    sptes:
+    steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
         with:
@@ -214,22 +205,29 @@ jobs:
           #ref: master # TODO: use fixed version
           repository: yelizariev/itpp-runbot
           ref: tests
-      - name: Analyze PR
+      - name: Install python tools
         run: |
-          # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
-          cd REPO
-          python ../DINAR/workflow-files/analyze-pr.py all ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.number }}
+          pip install plumbum
       - name: Download deps artifact
         uses: actions/download-artifact@v1
         with:
           name: deps
           path: deps/
+      - name: Analyze PR
+        run: |
+          # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
+          DEPS_MODULES=$(cat deps/modules.txt)
+          cd REPO
+          python ../DINAR/workflow-files/analyze-pr.py all "$DEPS_MODULES"
+      - name: Configure Docker
+        run: |
+          bash DINAR/workflow-files/configure-docker.sh ${{ secrets.DINAR_TOKEN }}
       - name: Download base images and apply deps artifact
         run: |
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml pull
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
-          bash ../DINAR/workflow-files/load-docker-layers.sh deps/
+          bash DINAR/workflow-files/load-docker-layers.sh deps/
       - name: Install additional dependencies
         run: |
           # Install dependencies without tests
@@ -238,7 +236,7 @@ jobs:
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
 
           # save artifacts for local run
-          bash ../DINAR/workflow-files/load-docker-layers.sh deps-all/
+          bash DINAR/workflow-files/load-docker-layers.sh deps-all/
 
       - name: Save DINAR with dependencies
         uses: actions/upload-artifact@v1

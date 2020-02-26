@@ -49,3 +49,4 @@ Notifications on updates: `via Atom <https://github.com/it-projects-llc/misc-add
 Tested on Odoo 12.0 288662a9de7420deaf7b13c9a8b1b1b92e15ec1f
 
 
+

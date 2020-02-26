@@ -61,7 +61,7 @@ jobs:
           python-version: "3.7.x"
       - name: Install python tools
         run: |
-          pip install plumbum PyGithub
+          pip install plumbum PyGithub pyyaml
       - name: Analyze PR
         run: |
           # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
@@ -149,7 +149,7 @@ jobs:
           bash DINAR/workflow-files/configure-docker.sh ${{ secrets.DINAR_TOKEN }}
       - name: Install python tools
         run: |
-          pip install plumbum PyGithub
+          pip install plumbum PyGithub pyyaml
       - name: Analyze PR
         run: |
           # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
@@ -169,6 +169,7 @@ jobs:
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
           # Save artifacts for local run and for integrations Tests
           bash DINAR/workflow-files/save-docker-layers.sh deps/
+          echo $MODULES > deps/modules.txt
 
       - name: Save DINAR with dependencies
         uses: actions/upload-artifact@v1
@@ -207,16 +208,17 @@ jobs:
       - name: Install python tools
         run: |
           pip install plumbum
-      - name: Analyze PR
-        run: |
-          # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
-          cd REPO
-          python ../DINAR/workflow-files/analyze-pr.py all ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.number }}
       - name: Download deps artifact
         uses: actions/download-artifact@v1
         with:
           name: deps
           path: deps/
+      - name: Analyze PR
+        run: |
+          # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
+          DEPS_MODULES=$(cat deps/modules.txt)
+          cd REPO
+          python ../DINAR/workflow-files/analyze-pr.py all "$DEPS_MODULES"
       - name: Configure Docker
         run: |
           bash DINAR/workflow-files/configure-docker.sh ${{ secrets.DINAR_TOKEN }}

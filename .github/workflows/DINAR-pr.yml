@@ -158,7 +158,7 @@ jobs:
       - name: Install json parser
         run: |
           sudo apt-get install jq
-      - name: Install Dependencies
+      - name: Download base images and Install Dependencies
         run: |
           # TODO if there is changes in REPO/.DINAR/image/dependencies/* we need to install them too.
           # Workaround for now: update dependencies in upstream first and then make\update the Pull Request
@@ -166,6 +166,7 @@ jobs:
           # Install dependencies without tests
           export MODULES="${{ env.PR_UPDATED_MODULES_DEPENDENCIES }}"
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml pull
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
           # Save artifacts for local run and for integrations Tests
           bash DINAR/workflow-files/save-docker-layers.sh deps/

@@ -252,14 +252,16 @@ jobs:
 
 
           # save artifacts for local run
-          bash DINAR/workflow-files/save-docker-layers.sh deps-all/
-          echo $MODULES > deps-all/modules.txt
+          # TODO: https://github.com/itpp-labs/DINAR/issues/41
+          #bash DINAR/workflow-files/save-docker-layers.sh deps-all/
+          #echo $MODULES > deps-all/modules.txt
 
-      - name: Save DINAR with dependencies
-        uses: actions/upload-artifact@v1
-        with:
-          name: deps-all
-          path: deps-all/
+      # TODO: https://github.com/itpp-labs/DINAR/issues/41
+      #- name: Save DINAR with dependencies
+      #  uses: actions/upload-artifact@v1
+      #  with:
+      #    name: deps-all
+      #    path: deps-all/
 
       - name: Test all modules
         run: |

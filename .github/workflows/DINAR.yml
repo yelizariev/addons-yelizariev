@@ -49,6 +49,9 @@ jobs:
       - name: Configure Docker
         run: |
           bash DINAR/workflow-files/configure-docker.sh ${{ secrets.DINAR_TOKEN }}
+          echo "::set-env name=IMAGE_ODOO_BASE::${GITHUB_REPOSITORY}/dinar-deps-$IMAGE_CODE"
+          echo "::set-env name=REGISTRY_IMAGE_DB::itpp/postgres-autoconf:${DB_VERSION}-alpine"
+
       - name: dinar-deps
         uses: elgohr/Publish-Docker-Github-Action@master
         env:
@@ -58,7 +61,7 @@ jobs:
           CLEAN: false
           COMPILE: false
         with:
-          name: ${{ env.IMAGE_ODOO_BASE }}
+          name: ${{ env.IMAGE_DEPS }}
           registry: ${{ env.REGISTRY }}
           username: ${{ env.REGISTRY_USERNAME }}
           password: ${{ env.REGISTRY_PASSWORD }}
@@ -74,11 +77,7 @@ jobs:
           export MODULES=$(cat REPO/.DINAR/volumes/addons.yaml | shyaml get-values base-addons | xargs | sed "s/ /,/g")
 
           export DOODBA_WITHOUT_DEMO=all
-          export IMAGE_DB=${GITHUB_REPOSITORY}/dinar-db-nodemo-$IMAGE_CODE
-          export IMAGE_ODOO=${GITHUB_REPOSITORY}/dinar-odoo-nodemo-$IMAGE_CODE
-          bash DINAR/workflow-files/images-with-preinstalled-modules.sh
+          bash DINAR/workflow-files/images-with-preinstalled-modules.sh $IMAGE_DB-nodemo $IMAGE_ODOO-nodemo
 
           export DOODBA_WITHOUT_DEMO=false
-          export IMAGE_DB=${GITHUB_REPOSITORY}/dinar-db-$IMAGE_CODE
-          export IMAGE_ODOO=${GITHUB_REPOSITORY}/dinar-odoo-$IMAGE_CODE
-          bash DINAR/workflow-files/images-with-preinstalled-modules.sh
+          bash DINAR/workflow-files/images-with-preinstalled-modules.sh $IMAGE_DB $IMAGE_ODOO

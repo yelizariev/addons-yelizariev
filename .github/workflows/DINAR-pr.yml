@@ -158,15 +158,16 @@ jobs:
       - name: Install json parser
         run: |
           sudo apt-get install jq
-      - name: Install Dependencies
+      - name: Download base images and Install Dependencies
         run: |
           # TODO if there is changes in REPO/.DINAR/image/dependencies/* we need to install them too.
           # Workaround for now: update dependencies in upstream first and then make\update the Pull Request
 
           # Install dependencies without tests
           export MODULES="${{ env.PR_UPDATED_MODULES_DEPENDENCIES }}"
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml config
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml pull
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml up --abort-on-container-exit
           # Save artifacts for local run and for integrations Tests
           bash DINAR/workflow-files/save-docker-layers.sh deps/
           echo $MODULES > deps/modules.txt
@@ -181,8 +182,8 @@ jobs:
         run: |
           export MODULES="${{ env.PR_UPDATED_MODULES_INSTALLABLE }}"
           export ODOO_EXTRA_ARG=--test-enable
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml config
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml up --abort-on-container-exit
 
   tests-all:
     name: Integration Tests
@@ -224,29 +225,47 @@ jobs:
           bash DINAR/workflow-files/configure-docker.sh ${{ secrets.DINAR_TOKEN }}
       - name: Download base images and apply deps artifact
         run: |
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml pull
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml config
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml pull
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml up --no-start
           bash DINAR/workflow-files/load-docker-layers.sh deps/
       - name: Install additional dependencies
         run: |
+          # TMP
+          CONTAINER=dinar_db_1
+          docker start $CONTAINER
+          echo "pg_wal"
+          docker exec $CONTAINER ls /var/lib/postgresql/data-novolume/pg_wal/
+          docker stop $CONTAINER
+
+
           # Install dependencies without tests
           export MODULES="${{ env.PR_ALL_MODULES_DEPENDENCIES }}"
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml config
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml up --abort-on-container-exit
+
+          # TMP
+          docker start $CONTAINER
+          echo "pg_wal"
+          docker exec $CONTAINER ls /var/lib/postgresql/data-novolume/pg_wal/
+          docker stop $CONTAINER
+
 
           # save artifacts for local run
-          bash DINAR/workflow-files/load-docker-layers.sh deps-all/
+          # TODO: https://github.com/itpp-labs/DINAR/issues/41
+          #bash DINAR/workflow-files/save-docker-layers.sh deps-all/
+          #echo $MODULES > deps-all/modules.txt
 
-      - name: Save DINAR with dependencies
-        uses: actions/upload-artifact@v1
-        with:
-          name: deps-all
-          path: deps-all/
+      # TODO: https://github.com/itpp-labs/DINAR/issues/41
+      #- name: Save DINAR with dependencies
+      #  uses: actions/upload-artifact@v1
+      #  with:
+      #    name: deps-all
+      #    path: deps-all/
 
       - name: Test all modules
         run: |
-          export MODULES="${{ env.PR_UPDATED_MODULES }}"
+          export MODULES="${{ env.PR_ALL_MODULES }}"
           export ODOO_EXTRA_ARG=--test-enable
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml config
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml up --abort-on-container-exit

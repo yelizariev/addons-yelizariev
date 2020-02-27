@@ -5,3 +5,4 @@ base-addons:
 # list of modules that will not be installed at any case
 excluded-addons:
   - hw_proxy
+  - ir_attachment_force_storage

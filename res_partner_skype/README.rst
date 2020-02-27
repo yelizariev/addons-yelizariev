@@ -47,3 +47,4 @@ Changelog: `<doc/changelog.rst>`_
 Notifications on updates: `via Atom <https://github.com/it-projects-llc/misc-addons/commits/12.0/res_partner_skype.atom>`_, `by Email <https://blogtrottr.com/?subscribe=https://github.com/it-projects-llc/misc-addons/commits/12.0/res_partner_skype.atom>`_
 
 Tested on Odoo 12.0 c1254cca7aae54982d270227d58aad8bdf0a7804
+

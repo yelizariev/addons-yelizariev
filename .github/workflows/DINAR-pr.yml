@@ -231,10 +231,25 @@ jobs:
           bash DINAR/workflow-files/load-docker-layers.sh deps/
       - name: Install additional dependencies
         run: |
+          # TMP
+          CONTAINER=dinar_db_1
+          docker start $CONTAINER
+          echo "pg_wal"
+          docker exec $CONTAINER ls /var/lib/postgresql/data-novolume/pg_wal/
+          docker stop $CONTAINER
+
+
           # Install dependencies without tests
           export MODULES="${{ env.PR_ALL_MODULES_DEPENDENCIES }}"
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml config
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose.yml up --abort-on-container-exit
+
+          # TMP
+          docker start $CONTAINER
+          echo "pg_wal"
+          docker exec $CONTAINER ls /var/lib/postgresql/data-novolume/pg_wal/
+          docker stop $CONTAINER
+
 
           # save artifacts for local run
           bash DINAR/workflow-files/save-docker-layers.sh deps-all/

@@ -52,3 +52,4 @@ Tested on Odoo 12.0 288662a9de7420deaf7b13c9a8b1b1b92e15ec1f
 
 
 
+

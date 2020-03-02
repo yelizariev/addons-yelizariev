@@ -181,13 +181,13 @@ jobs:
           # TODO https://github.com/itpp-labs/DINAR/issues/42
           exit 1
       - name: Prepare DINAR with additional dependencies
-        if: env.PR_MODULES_DEPS != '' or env.PR_DEPS != ''
+        if: env.PR_MODULES_DEPS != '' || env.PR_DEPS != ''
         run: |
           # Save artifacts for local run and for integrations Tests
           bash DINAR/workflow-files/save-docker-layers.sh new-deps/
           echo $MODULES > new-deps/modules.txt
       - name: Save DINAR with dependencies
-        if: env.PR_MODULES_DEPS != '' or env.PR_DEPS != ''
+        if: env.PR_MODULES_DEPS != '' || env.PR_DEPS != ''
         uses: actions/upload-artifact@v1
         with:
           name: new-deps

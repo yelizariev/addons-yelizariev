@@ -66,6 +66,9 @@ jobs:
           buildargs: ODOO_VERSION,AGGREGATE,PIP_INSTALL_ODOO,CLEAN,COMPILE,LOCAL_CUSTOM_DIR
           workdir: REPO/.DINAR/
           cache: ${{ github.event_name != 'schedule' }}
+      - name: Install python tools
+        run: |
+          pip install plumbum pyyaml
       - name: Compute Modules Dependencies
         run: |
           # sets environment variables that available in next steps via $ {{ env.VAR_NAME }} notation

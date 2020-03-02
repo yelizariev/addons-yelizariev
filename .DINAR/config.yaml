@@ -1,14 +1,14 @@
 addons:
-    # modules to install before running tests
-    include:
-      - contacts
+  # modules to install before running tests
+  include:
+    - contacts
 
-    # modules to exclude from installation/testing
-    exclude:
-      - hw_proxy
-      - ir_attachment_force_storage
+  # modules to exclude from installation/testing
+  exclude:
+    - hw_proxy
+    - ir_attachment_force_storage
 
-    server_wide_modules:
-      - web
-      - ir_attachment_url
-      - ir_config_parameter_multi_company
+  server_wide_modules:
+    - web
+    - ir_attachment_url
+    - ir_config_parameter_multi_company

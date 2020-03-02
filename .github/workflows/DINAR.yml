@@ -1,4 +1,4 @@
-# Copyright 2020 IT-Projects Labs
+# Copyright 2020 IT Projects Labs
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,10 +49,8 @@ jobs:
       - name: Configure Docker
         run: |
           bash DINAR/workflow-files/configure-docker.sh ${{ secrets.DINAR_TOKEN }}
-          echo "::set-env name=IMAGE_ODOO_BASE::${GITHUB_REPOSITORY}/dinar-deps-$IMAGE_CODE"
-          echo "::set-env name=REGISTRY_IMAGE_DB::itpp/postgres-autoconf:${DB_VERSION}-alpine"
 
-      - name: dinar-deps
+      - name: dinar-odoo-base
         uses: elgohr/Publish-Docker-Github-Action@master
         env:
           LOCAL_CUSTOM_DIR: ./image
@@ -68,13 +66,14 @@ jobs:
           buildargs: ODOO_VERSION,AGGREGATE,PIP_INSTALL_ODOO,CLEAN,COMPILE,LOCAL_CUSTOM_DIR
           workdir: REPO/.DINAR/
           cache: ${{ github.event_name != 'schedule' }}
-      - name: Install shyaml
+      - name: Compute Modules Dependencies
         run: |
-          pip install shyaml
+          # sets environment variables that available in next steps via $ {{ env.VAR_NAME }} notation
+          cd REPO
+          python ../DINAR/workflow-files/analyze-modules.py all
       - name: Install Base Addons
         run: |
-          # convert "base-addons" list to comma-separated list
-          export MODULES=$(cat REPO/.DINAR/volumes/addons.yaml | shyaml get-values base-addons | xargs | sed "s/ /,/g")
+          export MODULES=$ALL_MODULES_DEPENDENCIES
 
           export DOODBA_WITHOUT_DEMO=all
           bash DINAR/workflow-files/images-with-preinstalled-modules.sh $IMAGE_DB-nodemo $IMAGE_ODOO-nodemo

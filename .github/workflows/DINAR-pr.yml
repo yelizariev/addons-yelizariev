@@ -223,7 +223,7 @@ jobs:
           ref: tests
       - name: Install python tools
         run: |
-          pip install plumbum
+          pip install plumbum pyyaml
       - name: Download Additional Dependencies artifact
         uses: actions/download-artifact@v1
         with:

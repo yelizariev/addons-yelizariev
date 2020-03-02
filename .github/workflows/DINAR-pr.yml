@@ -66,9 +66,9 @@ jobs:
         run: |
           # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
           cd REPO
-          python ../DINAR/workflow-files/analyze-pr.py updated ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.number }}
+          python ../DINAR/workflow-files/analyze-modules.py updated ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.number }}
       - name: HOW TO RUN LOCALLY
-        #if: "env.PR_UPDATED_MODULES_INSTALLABLE != ''"
+        #if: "env.PR_MODULES != ''"
         run: |
           cat << 'EOF'
           To test updates run:
@@ -87,7 +87,7 @@ jobs:
               git -C pr-files fetch origin $REVISION
               git -C pr-files checkout FETCH_HEAD
               docker-compose pull
-              export MODULES=${{ env.PR_UPDATED_MODULES_INSTALLABLE }}
+              export MODULES=${{ env.PR_MODULES }}
           EOF
 
           if [ "${{ github.event.pull_request.base.ref }}" == "10.0" ]; then
@@ -150,37 +150,52 @@ jobs:
       - name: Install python tools
         run: |
           pip install plumbum PyGithub pyyaml
+      - name: Download Docker images with preinstalled modules
+        run: |
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml config
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml pull
+          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml up --no-start
       - name: Analyze PR
         run: |
+          # Get list of installed modules
+          ODOO_BASE_MODULES=$(docker inspect \
+          --format '{{ index .Config.Labels "dinar.odoo.modules"}}' \
+          dinar_odoo_1)
+
           # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
           cd REPO
-          python ../DINAR/workflow-files/analyze-pr.py updated ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.number }}
+          python ../DINAR/workflow-files/analyze-modules.py updated ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.number }} $ODOO_BASE_MODULES
       - name: Install json parser
         run: |
           sudo apt-get install jq
-      - name: Download base images and Install Dependencies
+      - name: Install Additional Dependencies (Modules)
+        if: env.PR_MODULES_DEPS != ''
         run: |
-          # TODO if there is changes in REPO/.DINAR/image/dependencies/* we need to install them too.
-          # Workaround for now: update dependencies in upstream first and then make\update the Pull Request
-
-          # Install dependencies without tests
-          export MODULES="${{ env.PR_UPDATED_MODULES_DEPENDENCIES }}"
+          # Install new dependencies without tests
+          export MODULES="${{ env.PR_MODULES_DEPS }}"
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml config
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml pull
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml up --abort-on-container-exit
+      - name: Install Additional Dependencies (Packages)
+        if: env.PR_DEPS != ''
+        run: |
+          # TODO https://github.com/itpp-labs/DINAR/issues/42
+          exit 1
+      - name: Prepare DINAR with additional dependencies
+        if: env.PR_MODULES_DEPS != '' or env.PR_DEPS != ''
+        run: |
           # Save artifacts for local run and for integrations Tests
-          bash DINAR/workflow-files/save-docker-layers.sh deps/
-          echo $MODULES > deps/modules.txt
-
+          bash DINAR/workflow-files/save-docker-layers.sh new-deps/
+          echo $MODULES > new-deps/modules.txt
       - name: Save DINAR with dependencies
+        if: env.PR_MODULES_DEPS != '' or env.PR_DEPS != ''
         uses: actions/upload-artifact@v1
         with:
-          name: deps
-          path: deps/
+          name: new-deps
+          path: new-deps/
       - name: Test updated modules
-        if: env.PR_UPDATED_MODULES_INSTALLABLE != ''
+        if: env.PR_MODULES != ''
         run: |
-          export MODULES="${{ env.PR_UPDATED_MODULES_INSTALLABLE }}"
+          export MODULES="${{ env.PR_MODULES }}"
           export ODOO_EXTRA_ARG=--test-enable
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml config
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml up --abort-on-container-exit
@@ -209,63 +224,37 @@ jobs:
       - name: Install python tools
         run: |
           pip install plumbum
-      - name: Download deps artifact
+      - name: Download Additional Dependencies artifact
         uses: actions/download-artifact@v1
         with:
-          name: deps
-          path: deps/
+          name: new-deps
+          path: new-deps/
+      - name: Check artifact
+        if: failure()
+        run: |
+          echo "::set-env name=ARTIFACT::0"
       - name: Analyze PR
         run: |
           # sets environment variables that available in next steps via $ {{ env.PR_... }} notation
-          DEPS_MODULES=$(cat deps/modules.txt)
+          DEPS_MODULES=$(cat new-deps/modules.txt || true)
           cd REPO
-          python ../DINAR/workflow-files/analyze-pr.py all "$DEPS_MODULES"
+          python ../DINAR/workflow-files/analyze-modules.py all "$DEPS_MODULES"
       - name: Configure Docker
         run: |
           bash DINAR/workflow-files/configure-docker.sh ${{ secrets.DINAR_TOKEN }}
-      - name: Download base images and apply deps artifact
+      - name: Download base images
         run: |
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml config
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml pull
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml up --no-start
-          bash DINAR/workflow-files/load-docker-layers.sh deps/
-      - name: Install additional dependencies
+      - name: Apply new-deps artifact
+        if: env.ARTIFACT != "0"
         run: |
-          # TMP
-          CONTAINER=dinar_db_1
-          docker start $CONTAINER
-          echo "pg_wal"
-          docker exec $CONTAINER ls /var/lib/postgresql/data-novolume/pg_wal/
-          docker stop $CONTAINER
-
-
-          # Install dependencies without tests
-          export MODULES="${{ env.PR_ALL_MODULES_DEPENDENCIES }}"
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml config
-          docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml up --abort-on-container-exit
-
-          # TMP
-          docker start $CONTAINER
-          echo "pg_wal"
-          docker exec $CONTAINER ls /var/lib/postgresql/data-novolume/pg_wal/
-          docker stop $CONTAINER
-
-
-          # save artifacts for local run
-          # TODO: https://github.com/itpp-labs/DINAR/issues/41
-          #bash DINAR/workflow-files/save-docker-layers.sh deps-all/
-          #echo $MODULES > deps-all/modules.txt
-
-      # TODO: https://github.com/itpp-labs/DINAR/issues/41
-      #- name: Save DINAR with dependencies
-      #  uses: actions/upload-artifact@v1
-      #  with:
-      #    name: deps-all
-      #    path: deps-all/
+          bash DINAR/workflow-files/load-docker-layers.sh new-deps/
 
       - name: Test all modules
         run: |
-          export MODULES="${{ env.PR_ALL_MODULES }}"
+          export MODULES="${{ env.ALL_MODULES }}"
           export ODOO_EXTRA_ARG=--test-enable
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml config
           docker-compose -p DINAR -f DINAR/workflow-files/docker-compose-DINAR-pr.yml up --abort-on-container-exit

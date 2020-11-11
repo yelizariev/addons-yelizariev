@@ -1,6 +1,8 @@
 .. image:: https://itpp.dev/images/favicon.png
    :alt: IT Projects Labs
-   :target: https://odoo-community.org
+   :height: 20x
+   :width: 20px
+   :target: https://itpp.dev
 
 .. image:: https://img.shields.io/badge/license-LGPL--3-blue.png
    :target: https://www.gnu.org/licenses/lgpl

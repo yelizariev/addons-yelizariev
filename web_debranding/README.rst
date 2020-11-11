@@ -1,7 +1,5 @@
-.. image:: https://itpp.dev/images/favicon.png
+.. image:: https://itpp.dev/images/infinity-readme.png
    :alt: IT Projects Labs
-   :height: 20px
-   :width: 20px
    :target: https://itpp.dev
 
 .. image:: https://img.shields.io/badge/license-LGPL--3-blue.png

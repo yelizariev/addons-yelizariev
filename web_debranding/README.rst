@@ -12,7 +12,7 @@
 
 Build and enhance brand by removing references to `odoo.com <https://www.odoo.com/>`__ and customizing company logo, favicon, page title, etc. 
 
-:sos: To get an assistance on this module contact us by email: help@itpp.dev
+ To get an assistance on this module contact us by email :arrow_right: help@itpp.dev
 
 Contributors
 ============

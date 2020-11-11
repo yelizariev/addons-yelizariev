@@ -1,6 +1,6 @@
 .. image:: https://itpp.dev/images/favicon.png
    :alt: IT Projects Labs
-   :height: 20x
+   :height: 20px
    :width: 20px
    :target: https://itpp.dev
 

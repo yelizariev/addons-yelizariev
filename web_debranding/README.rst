@@ -1,12 +1,10 @@
 .. image:: https://itpp.dev/images/infinity-readme.png
-   :alt: IT Projects Labs
+   :alt: Tested and maintained by IT Projects Labs
    :target: https://itpp.dev
 
 .. image:: https://img.shields.io/badge/license-LGPL--3-blue.png
    :target: https://www.gnu.org/licenses/lgpl
    :alt: License: LGPL-3
-
-Tested and maintained by **IT Projects Labs**
 
 Assitance: apps@itpp.dev
 

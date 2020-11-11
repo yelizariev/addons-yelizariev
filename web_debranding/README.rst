@@ -2,6 +2,16 @@
    :target: https://www.gnu.org/licenses/lgpl
    :alt: License: LGPL-3
 
+.. image:: https://itpp.dev/images/favicon.png
+   :alt: IT Projects Labs
+   :target: https://odoo-community.org
+
+Tested and maintained by
+
+IT Projects Labs
+
+Assitance: apps@itpp.dev
+
 ====================
  Backend debranding
 ====================
@@ -9,29 +19,9 @@
 
 Build and enhance brand by removing references to `odoo.com <https://www.odoo.com/>`__ and customizing company logo, favicon, page title, etc. 
 
-Credits
-=======
-
 Contributors
-------------
+============
 * `Ivan Yelizariev <https://it-projects.info/team/yelizariev>`__
-
-Sponsors
---------
-* `IT-Projects LLC <https://it-projects.info>`__
-
-Maintainers
------------
-* `IT-Projects LLC <https://it-projects.info>`__
-
-      To get a guaranteed support
-      you are kindly requested to purchase the module
-      at `odoo apps store <https://apps.odoo.com/apps/modules/12.0/web_debranding/>`__.
-
-      Thank you for understanding!
-
-      `IT-Projects Team <https://www.it-projects.info/team>`__
-
 
 Further information
 ===================

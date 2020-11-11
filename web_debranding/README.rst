@@ -22,13 +22,7 @@ Contributors
 Further information
 ===================
 
-Demo: http://runbot.it-projects.info/demo/website-addons/12.0
-
-HTML Description: https://www.odoo.com/apps/modules/12.0/web_debranding/
-
-Usage instructions: `<doc/index.rst>`__
-
-Changelog: `<doc/changelog.rst>`__
+Odoo Apps Store: https://www.odoo.com/apps/modules/12.0/web_debranding/
 
 Notifications on updates: `via Atom <https://github.com/it-projects-llc/misc-addons/commits/12.0/web_debranding.atom>`_, `by Email <https://blogtrottr.com/?subscribe=https://github.com/it-projects-llc/misc-addons/commits/12.0/web_debranding.atom>`_
 

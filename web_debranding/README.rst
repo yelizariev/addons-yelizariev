@@ -1,14 +1,12 @@
-.. image:: https://img.shields.io/badge/license-LGPL--3-blue.png
-   :target: https://www.gnu.org/licenses/lgpl
-   :alt: License: LGPL-3
-
 .. image:: https://itpp.dev/images/favicon.png
    :alt: IT Projects Labs
    :target: https://odoo-community.org
 
-Tested and maintained by
+.. image:: https://img.shields.io/badge/license-LGPL--3-blue.png
+   :target: https://www.gnu.org/licenses/lgpl
+   :alt: License: LGPL-3
 
-IT Projects Labs
+Tested and maintained by **IT Projects Labs**
 
 Assitance: apps@itpp.dev
 

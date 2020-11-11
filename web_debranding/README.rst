@@ -6,14 +6,13 @@
    :target: https://www.gnu.org/licenses/lgpl
    :alt: License: LGPL-3
 
-Assitance: apps@itpp.dev
-
 ====================
  Backend debranding
 ====================
 
-
 Build and enhance brand by removing references to `odoo.com <https://www.odoo.com/>`__ and customizing company logo, favicon, page title, etc. 
+
+To get an assistance on this module contact us by email: help@itpp.dev
 
 Contributors
 ============
